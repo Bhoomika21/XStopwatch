@@ -1,42 +1,50 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 
 function App() {
-  const [time,setTime] = useState(0);
-  const [timerOn, setTimerOn] = useState(false)
-
-  const startTimer = useCallback(() => {
-    setTimerOn(true)
-    // return time + 1;
-  }, [])
-
-  const stopTimer = useCallback(() => {
-    setTimerOn(false)
-  }, [])
-
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
-    let interval = null;
-    if(timerOn){
-      interval = setInterval(() => {
-        setTime((prev) => prev + 1);
+    let timer;
+    if (isRunning) {
+      timer = setInterval(() => {
+        setTime(prevTime => prevTime + 1);
       }, 1000);
+    } else {
+      clearInterval(timer);
     }
-    else{
-      clearInterval(interval);
-    }
+    return () => clearInterval(timer);
+  }, [isRunning]);
 
-    return () => clearInterval(interval);
-  }, [timerOn])
+  const startStop = () => {
+    setIsRunning(!isRunning);
+  };
+
+  const reset = () => {
+    setTime(0);
+    setIsRunning(false);
+  };
+
+  const formatTime = () => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
 
   return (
-    <>
-      <h1>Stopwatch</h1>
-      <label>Time: 0:0{time}</label>
-      <br/>
-      <button onClick={startTimer} name="Start">Start</button>
-      <button onClick={stopTimer} name="Stop">Stop</button>
-    </>
-  )
+    <div className="stopwatch-container">
+      <h1 className="stopwatch-title">Stopwatch</h1>
+      <div className="stopwatch-time">{formatTime()}</div>
+      <div className="button-container">
+        {isRunning ? (
+          <button className="stopwatch-button" onClick={startStop}>Stop</button>
+        ) : (
+          <button className="stopwatch-button" onClick={startStop}>Start</button>
+        )}
+        <button className="stopwatch-button" onClick={reset}>Reset</button>
+      </div>
+    </div>
+  );
 }
 
 export default App
